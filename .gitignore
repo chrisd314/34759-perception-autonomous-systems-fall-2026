@@ -1,0 +1,6 @@
+# Virtual environments
+.pfas
+
+# Python bytecode and caches
+__pycache__/
+
