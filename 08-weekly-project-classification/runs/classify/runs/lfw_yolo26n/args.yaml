@@ -111,4 +111,5 @@ auto_augment: randaugment
 erasing: 0.4
 cfg: null
 tracker: tracktrack.yaml
-save_dir: C:\Users\ROG\Documents\perception\08-weekly-project-classification\runs\classify\runs\lfw_yolo26n
+save_dir: C:\Users\chris\Desktop\34759_pfas\Project\Perception for Autonomous Systems
+  - Weekly Projects - Fall 2026\Code\34759-perception-autonomous-systems-fall-2026\08-weekly-project-classification\runs\classify\runs\lfw_yolo26n
