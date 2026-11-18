@@ -2221,45 +2221,47 @@ def ch10_saved_outputs():
         report(out)
 
 
-def ch10_corner_residuals():
-    left, right = np.load(FINAL_RESULTS / "corners.npy", allow_pickle=True)
+def ch10_corner_detectors():
+    """Each detector's distance from the board's planar shape; corner_variants.npy is written by Approach tests.ipynb."""
+    left, right = np.load(FINAL_RESULTS / "corner_variants.npy", allow_pickle=True)
     grid = np.mgrid[0:7, 0:5].T.reshape(-1, 2).astype(np.float32)
-    before, after, removed = [], [], []
-    for corners in list(left) + list(right):
-        if corners is None:
-            continue
-        H, _ = cv2.findHomography(grid, corners, 0)
-        fit = cv2.perspectiveTransform(grid.reshape(-1, 1, 2), H).reshape(-1, 2)
-        before.append(np.sqrt(np.mean(np.sum((fit - corners) ** 2, axis=1))))
-        H, mask = cv2.findHomography(grid, corners, cv2.RANSAC, 1.0)
-        keep = mask.ravel() == 1
-        fit = cv2.perspectiveTransform(grid[keep].reshape(-1, 1, 2), H).reshape(-1, 2)
-        after.append(np.sqrt(np.mean(np.sum((fit - corners[keep]) ** 2, axis=1))))
-        removed.append(35 - keep.sum())
-    before, after = np.array(before), np.array(after)
-    print(f"  corners: {len(before)} views; homography residual before: median {np.median(before):.2f}, max {before.max():.2f} px; after: median {np.median(after):.2f}, max {after.max():.2f} px; removed per view: median {np.median(removed):.0f}, max {np.max(removed)}")
-    order = np.argsort(before)
-    fig, ax = plt.subplots(figsize=(11, 3.6))
-    ax.plot(before[order], color=SERIES[1], marker="o", markersize=8, linestyle="none", label="all corners")
-    ax.plot(after[order], color=SERIES[0], marker="o", markersize=8, linestyle="none", label="after removing the outliers with RANSAC")
-    ax.grid(axis="y", color=GRID, linewidth=0.6)
-    ax.set_xticks([])
-    ax.set_xlabel("calibration views, sorted by their error before")
-    ax.set_ylabel("residual from one homography [px]")
+    fig, ax = plt.subplots(figsize=(11, 3.8))
+    for k, (detector, label) in enumerate((("classic", "findChessboardCorners"), ("subpix", "findChessboardCorners + cornerSubPix"),
+                                           ("sb", "findChessboardCornersSB"))):
+        errors = []
+        for found in list(left) + list(right):
+            corners = found.get(detector)
+            if corners is None:
+                continue
+            H, _ = cv2.findHomography(grid, corners, 0)
+            fit = cv2.perspectiveTransform(grid.reshape(-1, 1, 2), H).reshape(-1, 2)
+            errors.append(np.sqrt(np.mean(np.sum((fit - corners) ** 2, axis=1))))
+        errors = np.sort(errors)
+        print(f"  {detector}: {len(errors)} images; distance from the planar shape: median {np.median(errors):.2f}, max {errors.max():.2f} px")
+        ax.plot(np.linspace(0, 100, len(errors)), errors, color=SERIES[k], marker="o", markersize=6, linewidth=1.2,
+                label=f"{label} ({len(errors)} images)")
+    ax.set_yscale("log")
+    ax.grid(color=GRID, linewidth=0.6)
+    ax.set_xlabel("share of the images where the detector found the board, sorted by error [%]")
+    ax.set_ylabel("distance from one homography [px]")
     ax.legend()
-    save(fig, 10, "corner_residuals")
+    save(fig, 10, "corner_detectors")
 
 
 def ch10_height_test():
     from sklearn import linear_model
     calibration = np.load(FINAL_RESULTS / "calibration.npz")
+    mx, my = cv2.initUndistortRectifyMap(calibration["K1"], calibration["d1"], calibration["R1"], calibration["P1"], (1280, 720), cv2.CV_32FC1)
+    valid = (mx >= 0) & (mx < 1280) & (my >= 0) & (my < 720)
+    left_limit = max(np.flatnonzero(valid[row])[0] for row in range(300, 650))
+    right_limit = min(np.flatnonzero(valid[row])[-1] for row in range(300, 650))
     height, disparity, source = [], [], []
     for k, name in enumerate(FINAL_SEQUENCES):
         rows = np.load(FINAL_RESULTS / f"{name}_detections.npy")
         centre = rows[:, 1] + rows[:, 3] / 2
-        good = (rows[:, 0] >= 1000) & (rows[:, 1] > 58) & (rows[:, 1] + rows[:, 3] < 1277) & (rows[:, 5] > 0)
+        good = (rows[:, 0] >= 1000) & (rows[:, 1] > left_limit + 2) & (rows[:, 1] + rows[:, 3] < right_limit - 2) & (rows[:, 5] > 0)
         if k == 1:
-            good &= (centre < 230) | (centre > 1000)
+            good &= (centre < 210) | (centre > 915)          # away from the board, as in the notebook
         height.append(rows[good, 4])
         disparity.append(rows[good, 5])
         source.append(np.full(good.sum(), k))
@@ -2322,7 +2324,7 @@ def ch10_video_frames():
 
 
 CHAPTERS = {
-    10: ([], [ch10_saved_outputs, ch10_corner_residuals, ch10_height_test, ch10_scene, ch10_video_frames]),
+    10: ([], [ch10_saved_outputs, ch10_corner_detectors, ch10_height_test, ch10_scene, ch10_video_frames]),
     8: (CH8_NOTEBOOKS, [ch8_pca, ch8_knn, ch8_margin, ch8_kernels, ch8_nms, ch8_mnist_pca]),
     9: (CH9_NOTEBOOKS, [ch9_tracking, ch9_reprojection, ch9_scene, ch9_drift, ch9_two_view, ch9_wp_variants, ch9_wp_flow_check]),
     3: (CH3_NOTEBOOKS, [ch3_epipolar_geometry, ch3_depth_from_disparity, ch3_metrics, ch3_window_size,

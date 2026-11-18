@@ -21,15 +21,16 @@ Everything still to review for the exercises and this book, for classes 1 to 9 a
 
 **Done**
 
-- [x] **Calibration, rectification, disparity, 3-D scene, detection and tracking in 2-D and 3-D** for all four sequences, in [Final Project.ipynb](../Final_project/Final%20Project.ipynb), with course methods and no deep learning.
+- [x] **Calibration, rectification, disparity, 3-D scene, detection and tracking in 2-D and 3-D** for all four sequences, in [Final Project.ipynb](../Final_project/Final%20Project.ipynb), with course methods plus OpenCV's SB corner detector, and no deep learning.
 - [x] **The comparisons behind each choice,** in [Approach tests.ipynb](../Final_project/Approach%20tests.ipynb).
-- [x] **The video:** [husky_tracking.mp4](../Final_project/results/husky_tracking.mp4), 1,594 frames, 39 MB. Only 6 of its frames were looked at.
+- [x] **The video:** [husky_tracking.mp4](../Final_project/results/husky_tracking.mp4), 1,594 frames, 33 MB. Only 6 of its frames were looked at.
 - [x] **The study book's chapter:** [chapter 10](10_final_project.md).
-- [x] **The board's square size:** 80 × 80 mm, as given by the professor. The project description doesn't state it, so cite the professor in the report. The robot then measures 0.956 m, 3.4 % short of the published 0.99 m.
+- [x] **The board's square size:** 80 × 80 mm, as given by the professor. The project description doesn't state it, so cite the professor in the report. The robot then measures 0.964 m, 2.6 % short of the published 0.99 m.
 
-**Your decision**
+**Your decisions**
 
-- [ ] **`cornerSubPix`.** No course material shows it, so it is off, but most 3-D tests are better with it. [The comparison](10_final_project.md#the-cornersubpix-decision) lists both. To switch it on, set `USE_SUBPIX = True`, delete `results/` and rerun (about 7 minutes).
+- [x] **Corner detector and calibration method:** `cv2.findChessboardCornersSB`, which isn't in the course material, with both cameras calibrated jointly (`CALIB_USE_INTRINSIC_GUESS`). [Chapter 10](10_final_project.md#calibration-and-rectification) compares it with the classic detector, `cornerSubPix` and two-step calibration. `cornerSubPix` only appears in the approach tests.
+- [x] **The 2-D filter's motion noise** is 1.0 px, chosen on the hidden-detection test like the 3-D one. On the real occlusion of sequence 2, the 2-D filter ends 53 px off; with 0.3 px it would be 27 px. The 3-D filter, the main one, ends 14 px (0.16 m) off.
 
 **Still to do**
 
@@ -40,12 +41,12 @@ Everything still to review for the exercises and this book, for classes 1 to 9 a
 
 **Known limits** (details in [chapter 10](10_final_project.md#discussion-and-limitations))
 
-- [ ] **Depth tilts by about 7°** on paths of constant distance, and about 3° with `cornerSubPix`. This points to the calibration.
-- [ ] **Far depths are uncertain.** The circle comes out 25 % longer in depth than in width, and the height test suggests a 1 px disparity offset, but removing it worsens the other tests. So it isn't applied.
-- [ ] **The floor marking's blob** in the first frames of sequence 2 is rejected, but why it appears wasn't investigated.
+- [ ] **Paths of constant distance still tilt by 2° to 3°.** The path may not have been exactly parallel to the cameras, or the calibration still has a small error.
+- [ ] **Far depths are uncertain.** The circle comes out 1.4 times longer in depth than in width, while the height test finds no disparity offset (0.1 px). The cause is either after the calibration, in the far robot's disparity, or in the path itself. [Chapter 10](10_final_project.md#discussion-and-limitations) lists ways to test it.
+- [ ] **A thin strip along the top of the image** in frame 3 of sequence 2 is rejected by the size check, but why it appears wasn't investigated.
 - [ ] **Colour, optical flow and the sliding window** were only tested, not used.
 
-**Images viewed for the project.** The rule against reading images was relaxed here, because a perception project can't be checked otherwise. These were the only ones, all small sheets: 2 of the scene and early boxes, 2 of random boxes, 1 of video frames, and 2 of result plots.
+**Images viewed for the project.** The rule against reading images was relaxed here, because a perception project can't be checked otherwise. These were the only ones, all small sheets: 2 of the scene and early boxes, 3 of random boxes, 1 of video frames, and 2 of result plots.
 
 ---
 
@@ -149,7 +150,7 @@ Your summary of the work, checked claim by claim:
 - [ ] **Plot helpers:** `plt.colorbar`, `plt.xlabel`, `plt.ylabel`, `plt.legend`, `plt.ylim`, `plt.gca`.
 - [ ] **Class 9:** `cv2.Rodrigues`, which neither the template nor the lecture text names, and `cv2.solvePnPRansac`, where the template only says PnP with RANSAC.
 - [ ] **Class 8 Weekly Project:** `metrics.accuracy_score` and `metrics.confusion_matrix`; the template imports `metrics` but names neither.
-- [ ] **Final project:** `cv2.findHomography` for the corners, and the four stereo functions from Weekly Project 4. `cv2.VideoWriter` only saves the video. `decision_function` is only in the approach tests, and `cv2.cornerSubPix` is off.
+- [ ] **Final project:** `cv2.findChessboardCornersSB` for the corners, which no course material shows, `cv2.findHomography`, and the four stereo functions from Weekly Project 4. `cv2.VideoWriter` only saves the video. `decision_function`, `cv2.cornerSubPix`, `cv2.undistortPoints` and `cv2.projectPoints` are only in the approach tests.
 - [ ] **Book only, in no notebook:** `cv2.findHomography` for the chapter 2 table; `cv2.solvePnP`, `cv2.findEssentialMat` and `cv2.recoverPose` for the chapter 9 comparisons.
 
 ---
