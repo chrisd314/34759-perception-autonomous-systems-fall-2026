@@ -233,13 +233,16 @@ Images are NumPy arrays: shape `(h, w)` for gray and `(h, w, 3)` for colour, typ
 
 | Function | Class | Level | What it does | Parameters and pitfalls |
 |---|---|---|---|---|
+| `cv2.findChessboardCornersSB(gray, (nx, ny), flags=cv2.CALIB_CB_EXHAUSTIVE \| cv2.CALIB_CB_NORMALIZE_IMAGE \| cv2.CALIB_CB_ACCURACY)` | 10 | project | `(found, corners)`, each corner already to a fraction of a pixel | not in the course; here it finds more boards than `findChessboardCorners`, with about six times smaller errors; see [chapter 10](10_final_project.md#corner-detection) |
 | `cv2.findHomography(pts1, pts2, cv2.RANSAC, 1.0)` | 10 | project | removes wrong board corners by their mask | Class 2's figures showed it; homographies are taught in Class 4 |
-| `cv2.stereoCalibrate`, `cv2.stereoRectify`, `cv2.initUndistortRectifyMap`, `cv2.remap` | 10 | project | as in Weekly Project 4 | `alpha` above 0.15 folds the map here |
+| `cv2.stereoCalibrate(obj, imgL, imgR, K1, d1, K2, d2, size, flags=cv2.CALIB_USE_INTRINSIC_GUESS)` | 10 | project | refines both cameras' K and distortion together with R and T | start from each camera's `calibrateCamera` result; `CALIB_FIX_INTRINSIC` would keep those fixed; see [chapter 10](10_final_project.md#two-step-or-joint-calibration) |
+| `cv2.stereoCalibrate`, `cv2.stereoRectify`, `cv2.initUndistortRectifyMap`, `cv2.remap` | 10 | project | as in Weekly Project 4 | here `alpha` from 0.4 up folds the map; 0.15 is used |
 | `linear_model.RANSACRegressor` with two input columns | 10 | taught | the floor plane Y = aX + bZ + c | `.estimator_.coef_`, `.intercept_` |
 | `np.linalg.lstsq(A, b, rcond=None)` | 10 | taught | linear least squares, here for a circle | plain NumPy |
 | `clf.decision_function(X)` | 10 | project | an SVM's score per window | only in `Approach tests.ipynb` |
 | `cv2.VideoWriter(path, cv2.VideoWriter_fourcc(*'mp4v'), fps, size)`, `.write(frame)`, `.release()` | 10 | project | saves the result video | not a perception method; `frame` must have exactly `size` |
-| `cv2.cornerSubPix(gray, corners, (5, 5), (-1, -1), criteria)` | 10 | project | moves corners to sub-pixel positions, from the image gradients in a window | no course material shows it, so `USE_SUBPIX` is off; see [chapter 10](10_final_project.md#the-cornersubpix-decision) |
+| `cv2.cornerSubPix(gray, corners, (5, 5), (-1, -1), criteria)` | 10 | project | moves corners to sub-pixel positions, from the image gradients in a window | only in `Approach tests.ipynb`, as one of the compared detectors; see [chapter 10](10_final_project.md#corner-detection) |
+| `cv2.undistortPoints(pts, K, d, None, R, P, criteria)`, `cv2.projectPoints(pts3d, rvec, tvec, K, d)` | 10 | project | map points from the original image to the rectified one, and back | only in the approach tests, to compare calibrations on the stored boxes |
 
 ## Terms
 
