@@ -6,3 +6,9 @@ venv/
 # Python bytecode and caches
 __pycache__/
 
+.DS_Store
+
+# Large files
+__MACOSX/
+# Final project image data (~4.4 GB, download it from DTU Learn)
+Final_project/[0-4]_*/
